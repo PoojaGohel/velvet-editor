@@ -54,17 +54,17 @@
     "cms-editor",
     "content-editor"
   ],
-  "homepage": "https://github.com/pooja-gohel/custom-text-editor#readme",
+  "homepage": "https://github.com/PoojaGohel/velvet-editor#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pooja-gohel/custom-text-editor.git"
+    "url": "git+https://github.com/PoojaGohel/velvet-editor.git"
   },
   "bugs": {
-    "url": "https://github.com/pooja-gohel/custom-text-editor/issues"
+    "url": "https://github.com/PoojaGohel/velvet-editor/issues"
   },
   "author": {
     "name": "Pooja Gohel",
-    "url": "https://github.com/pooja-gohel"
+    "url": "https://github.com/PoojaGohel"
   },
   "license": "MIT",
   "scripts": {
