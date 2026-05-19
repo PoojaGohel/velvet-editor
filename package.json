@@ -1,0 +1,98 @@
+{
+  "name": "velvet-writer",
+  "version": "1.2.3",
+  "description": "A premium, high-performance rich text editor for React with dynamic themes, glassmorphism UI, keyboard shortcuts, table insertion, code view, and full dark/light mode support.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./dist/index.css": "./dist/index.css"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "react",
+    "editor",
+    "rich-text-editor",
+    "text-editor",
+    "wysiwyg",
+    "wysiwyg-editor",
+    "react-editor",
+    "react-rich-text",
+    "contenteditable",
+    "rich-text",
+    "html-editor",
+    "markdown",
+    "dark-mode",
+    "light-mode",
+    "theming",
+    "glassmorphism",
+    "table-editor",
+    "code-view",
+    "formatting",
+    "bold",
+    "italic",
+    "underline",
+    "text-formatting",
+    "keyboard-shortcuts",
+    "react-component",
+    "typescript",
+    "velvet",
+    "velvet-writer",
+    "custom-editor",
+    "lightweight-editor",
+    "no-dependencies",
+    "document-editor",
+    "blog-editor",
+    "cms-editor",
+    "content-editor"
+  ],
+  "homepage": "https://github.com/pooja-gohel/custom-text-editor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pooja-gohel/custom-text-editor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pooja-gohel/custom-text-editor/issues"
+  },
+  "author": {
+    "name": "Pooja Gohel",
+    "url": "https://github.com/pooja-gohel"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsup src/components/Editor/index.ts --format cjs,esm --dts --minify --clean",
+    "lint": "eslint ."
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "emoji-picker-react": "^4.19.1",
+    "lucide-react": "^0.378.0",
+    "tailwind-merge": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "tsup": "^8.0.2",
+    "typescript": "^5.2.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
