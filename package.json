@@ -1,6 +1,6 @@
 {
   "name": "velvet-writer",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "A premium, high-performance rich text editor for React with dynamic themes, glassmorphism UI, keyboard shortcuts, table insertion, code view, and full dark/light mode support.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
