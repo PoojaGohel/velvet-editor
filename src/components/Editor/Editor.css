@@ -24,6 +24,7 @@
 }
 
 .custom-editor-container.light {
+  color-scheme: light;
   --editor-bg: #ffffff;
   --editor-toolbar-bg: #f8fafc;
   --editor-border: #e2e8f0;
@@ -64,6 +65,7 @@
   background: transparent;
   border-bottom: 1px solid var(--editor-border);
   padding: 8px 12px;
+  backdrop-filter: none;
 }
 
 .custom-editor-container.flat .custom-status-bar {
@@ -71,6 +73,17 @@
   background: transparent;
   border-top: 1px solid var(--editor-border);
   padding: 4px 12px;
+  backdrop-filter: none;
+}
+
+.custom-editor-container.flat .editor-scroller {
+  background: transparent;
+  border-radius: 0;
+}
+
+.custom-editor-container.flat .custom-editable {
+  background: transparent;
+  border-radius: 0;
 }
 
 .custom-editor-container.fullscreen {
@@ -482,14 +495,26 @@
 .img-resize-close:hover { border-color: #ef4444; color: #ef4444; }
 
 /* ── Light mode overrides ──────────────────────────────────────── */
-.velvet-editor-light .image-url-input,
-.velvet-editor-light .image-dim-input {
+.custom-editor-container.light .image-url-input,
+.custom-editor-container.light .image-dim-input {
   background: #f8fafc;
   color: #1e293b;
 }
-.velvet-editor-light .img-resize-inputs input {
+.custom-editor-container.light .img-resize-inputs input {
   background: #f8fafc;
   color: #1e293b;
+}
+.custom-editor-container.light .custom-code-view {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+.custom-editor-container.light .code-action-btn.cancel {
+  background: rgba(0, 0, 0, 0.05);
+  color: #475569;
+}
+.custom-editor-container.light .code-action-btn.cancel:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
 }
 
 .link-picker {
@@ -501,9 +526,9 @@
 }
 
 .link-picker input {
-  background: #020617;
+  background: var(--editor-bg);
   border: 1px solid var(--editor-border);
-  color: white;
+  color: var(--editor-text);
   padding: 8px 12px;
   border-radius: 8px;
   flex-grow: 1;
