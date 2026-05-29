@@ -3,11 +3,13 @@
 [![npm version](https://img.shields.io/npm/v/velvet-writer.svg?style=flat-square&color=a855f7)](https://www.npmjs.com/package/velvet-writer)
 [![npm downloads](https://img.shields.io/npm/dm/velvet-writer.svg?style=flat-square&color=10b981)](https://www.npmjs.com/package/velvet-writer)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/velvet-writer?style=flat-square&color=3b82f6)](https://bundlephobia.com/package/velvet-writer)
-[![license](https://img.shields.io/npm/l/velvet-writer.svg?style=flat-square&color=f59e0b)](https://github.com/pooja-gohel/custom-text-editor/blob/main/LICENSE)
+[![license](https://img.shields.io/npm/l/velvet-writer.svg?style=flat-square&color=f59e0b)](https://github.com/PoojaGohel/velvet-editor/blob/main/LICENSE)
+[![sponsor](https://img.shields.io/badge/sponsor-pooja--gohel-ea4aaa?style=flat-square&logo=github-sponsors)](https://github.com/sponsors/PoojaGohel)
+[![ko-fi](https://img.shields.io/badge/ko--fi-donate-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/PoojaGohel)
 
 A premium, high-performance, and 100% custom-built **rich text editor** for React. Zero dependency on Slate, Quill, or Draft.js — just raw DOM performance with a stunning glassmorphism UI.
 
-> 🔗 **[Live Demo](https://pooja-gohel.github.io/custom-text-editor/)**
+> 🔗 **[Live Demo](https://poojagohel.github.io/velvet-editor/)** | 💻 **[Try on CodeSandbox](https://codesandbox.io/s/x5d927)**
 
 ## ✨ Key Features & Capabilities
 
@@ -89,6 +91,6 @@ Velvet Writer supports three theme modes out of the box:
 <AdvanceTextEditor mode="light" accentColor="#10b981" />
 ```
 
-<!-- ## 📄 License
+## 📄 License
 
-MIT © [Pooja Gohel](https://github.com/pooja-gohel) -->
+MIT © [Pooja Gohel](https://github.com/PoojaGohel)

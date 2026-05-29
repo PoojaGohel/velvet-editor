@@ -6,7 +6,7 @@ import {
   Superscript, Subscript, Palette, Highlighter, X, Check, Code, Type,
   Plus, Image as ImageIcon, Minus, Quote, Table as TableIcon, Maximize,
   Minimize, Undo, Redo, Eraser, BarChart, Copy, FileCode, HelpCircle, ALargeSmall,
-  Smile
+  Smile, Target, Download, Eye, EyeOff
 } from 'lucide-react';
 export { EDITOR_VERSION } from './utils';
 import { cn, COLORS, hexToRgb, FONTS, FONT_SIZES, EmojiTheme, EDITOR_VERSION } from './utils';
@@ -27,12 +27,15 @@ export const AdvanceTextEditor = ({
   maxHeight,
   padding,
   fontSize,
-  initialValue = '<p><br></p>'
+  initialValue = '<p><br></p>',
+  autoSaveKey
 }: AdvanceTextEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef<Range | null>(null);
+
+  const [isSaved, setIsSaved] = useState(true);
 
   const [activeFormats, setActiveFormats] = useState<string[]>([]);
   const [systemMode, setSystemMode] = useState<'light' | 'dark'>('dark');
@@ -65,11 +68,21 @@ export const AdvanceTextEditor = ({
   const [helpActiveTab, setHelpActiveTab] = useState('shortcuts');
   const [customFontSizeInput, setCustomFontSizeInput] = useState('');
   const [stats, setStats] = useState({ words: 0, characters: 0 });
+  const [isZenMode, setIsZenMode] = useState(false);
+  const [wordGoal, setWordGoal] = useState<number>(0);
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [goalInput, setGoalInput] = useState('');
+  const [showFloatingMenu, setShowFloatingMenu] = useState(false);
+  const [floatingMenuCoords, setFloatingMenuCoords] = useState({ top: 0, left: 0 });
   const lastHtmlRef = useRef(htmlContent);
 
 
   const updateStats = useCallback((html: string) => {
-    const text = html.replace(/<[^>]*>/g, '').trim();
+    const text = html
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
     const words = text ? text.split(/\s+/).length : 0;
     const characters = text.length;
     setStats({ words, characters });
@@ -77,7 +90,7 @@ export const AdvanceTextEditor = ({
 
   // Sync external initialValue changes (like dynamic value updates or resets) into editor
   useEffect(() => {
-    if (initialValue !== undefined && initialValue !== htmlContent) {
+    if (initialValue !== undefined && initialValue !== lastHtmlRef.current) {
       setHtmlContent(initialValue);
       if (editorRef.current) {
         editorRef.current.innerHTML = initialValue;
@@ -85,7 +98,110 @@ export const AdvanceTextEditor = ({
         updateStats(initialValue);
       }
     }
-  }, [initialValue, htmlContent, updateStats]);
+  }, [initialValue, updateStats]);
+
+  const updateActiveBlockAndFloatingMenu = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection) return;
+
+    // 1. Detect Active Block for Zen Mode
+    if (editorRef.current) {
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        let block = range.commonAncestorContainer;
+        if (block.nodeType === 3) {
+          block = block.parentNode || block;
+        }
+        
+        while (block && block.parentNode && block.parentNode !== editorRef.current) {
+          block = block.parentNode;
+        }
+
+        if (block && block.parentNode === editorRef.current) {
+          Array.from(editorRef.current.children).forEach(child => {
+            child.removeAttribute('data-active-block');
+          });
+          (block as HTMLElement).setAttribute('data-active-block', 'true');
+        }
+      }
+    }
+
+    // 2. Handle Floating Selection Menu
+    if (selection.isCollapsed || selection.toString().trim() === '') {
+      setShowFloatingMenu(false);
+    } else {
+      if (selection.rangeCount > 0 && editorRef.current) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        const editorRect = editorRef.current.getBoundingClientRect();
+        
+        const top = rect.top - editorRect.top - 48; 
+        const left = rect.left - editorRect.left + (rect.width / 2) - 105; 
+        
+        setFloatingMenuCoords({
+          top: Math.max(0, top),
+          left: Math.max(10, Math.min(editorRect.width - 220, left))
+        });
+        setShowFloatingMenu(true);
+      }
+    }
+  }, []);
+
+  const exportToMarkdown = () => {
+    if (!editorRef.current) return;
+    const html = editorRef.current.innerHTML;
+    
+    let md = html
+      .replace(/<h1>(.*?)<\/h1>/gi, '# $1\n\n')
+      .replace(/<h2>(.*?)<\/h2>/gi, '## $1\n\n')
+      .replace(/<h3>(.*?)<\/h3>/gi, '### $1\n\n')
+      .replace(/<p>(.*?)<\/p>/gi, '$1\n\n')
+      .replace(/<blockquote>(.*?)<\/blockquote>/gi, '> $1\n\n')
+      .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+      .replace(/<b>(.*?)<\/b>/gi, '**$1**')
+      .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+      .replace(/<i>(.*?)<\/i>/gi, '*$1*')
+      .replace(/<ol>([\s\S]*?)<\/ol>/gi, (_, list) => {
+        let index = 1;
+        return list.replace(/<li>(.*?)<\/li>/gi, () => `${index++}. $1\n`) + '\n';
+      })
+      .replace(/<ul>([\s\S]*?)<\/ul>/gi, (_, list) => {
+        return list.replace(/<li>(.*?)<\/li>/gi, '- $1\n') + '\n';
+      })
+      .replace(/&nbsp;/g, ' ')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]*>/g, '');
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'velvet_document.md');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setActivePicker(null);
+  };
+
+  const exportToPDF = () => {
+    window.print();
+    setActivePicker(null);
+  };
+
+  const copyCleanHTML = () => {
+    if (!editorRef.current) return;
+    let clean = editorRef.current.innerHTML
+      .replace(/contenteditable="[^"]*"/gi, '')
+      .replace(/spellcheck="[^"]*"/gi, '')
+      .replace(/data-placeholder="[^"]*"/gi, '')
+      .replace(/data-active-block="[^"]*"/gi, '')
+      .replace(/class="[^"]*"/gi, ''); 
+      
+    navigator.clipboard.writeText(clean).then(() => {
+      alert("Clean HTML copied to clipboard!");
+    });
+    setActivePicker(null);
+  };
 
   const updateActiveFormats = useCallback(() => {
     if (isCodeView || !editorRef.current) return;
@@ -150,13 +266,21 @@ export const AdvanceTextEditor = ({
 
       // Update stats
       if (editorRef.current) {
-        const text = editorRef.current.innerText || '';
-        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        const text = (editorRef.current.innerText || '')
+          .replace(/\u00a0/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const words = text ? text.split(/\s+/).length : 0;
         const characters = text.length;
         setStats({ words, characters });
       }
     } catch { }
   }, [isCodeView]);
+
+  const handleEditorInteraction = useCallback(() => {
+    updateActiveFormats();
+    updateActiveBlockAndFloatingMenu();
+  }, [updateActiveFormats, updateActiveBlockAndFloatingMenu]);
 
   const handleInput = useCallback(() => {
     if (editorRef.current) {
@@ -177,6 +301,34 @@ export const AdvanceTextEditor = ({
       updateStats(htmlContent);
     }
   }, [htmlContent, updateStats]);
+
+  // Load autosaved content on mount
+  useEffect(() => {
+    if (autoSaveKey) {
+      const saved = localStorage.getItem(autoSaveKey);
+      if (saved) {
+        setHtmlContent(saved);
+        if (editorRef.current) {
+          editorRef.current.innerHTML = saved;
+          lastHtmlRef.current = saved;
+          updateStats(saved);
+        }
+      }
+    }
+  }, [autoSaveKey, updateStats]);
+
+  // Autosave content changes
+  useEffect(() => {
+    if (!autoSaveKey) return;
+    
+    setIsSaved(false);
+    const handler = setTimeout(() => {
+      localStorage.setItem(autoSaveKey, htmlContent);
+      setIsSaved(true);
+    }, 1000);
+
+    return () => clearTimeout(handler);
+  }, [htmlContent, autoSaveKey]);
 
   // Theme resolution logic
   useEffect(() => {
@@ -394,6 +546,55 @@ export const AdvanceTextEditor = ({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (isCodeView) return;
+
+    // Markdown Auto-formatting Shortcuts on Space
+    if (e.key === ' ') {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const container = range.commonAncestorContainer;
+        
+        let block = container.nodeType === 3 ? container.parentNode : container;
+        while (block && block !== editorRef.current && !['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'BLOCKQUOTE', 'LI'].includes((block as HTMLElement).tagName)) {
+          block = block.parentNode;
+        }
+
+        if (block && block !== editorRef.current) {
+          const blockText = (block as HTMLElement).innerText || '';
+          const trimmedText = blockText.trim();
+
+          if (trimmedText === '#') {
+            e.preventDefault();
+            document.execCommand('delete', false);
+            execCommand('formatBlock', 'h1');
+          } else if (trimmedText === '##') {
+            e.preventDefault();
+            document.execCommand('delete', false);
+            document.execCommand('delete', false);
+            execCommand('formatBlock', 'h2');
+          } else if (trimmedText === '###') {
+            e.preventDefault();
+            document.execCommand('delete', false);
+            document.execCommand('delete', false);
+            document.execCommand('delete', false);
+            execCommand('formatBlock', 'h3');
+          } else if (trimmedText === '>') {
+            e.preventDefault();
+            document.execCommand('delete', false);
+            execCommand('formatBlock', 'blockquote');
+          } else if (trimmedText === '-' || trimmedText === '*') {
+            e.preventDefault();
+            document.execCommand('delete', false);
+            execCommand('insertUnorderedList');
+          } else if (trimmedText === '1.') {
+            e.preventDefault();
+            document.execCommand('delete', false);
+            document.execCommand('delete', false);
+            execCommand('insertOrderedList');
+          }
+        }
+      }
+    }
 
     const isMod = e.ctrlKey || e.metaKey;
 
@@ -668,6 +869,7 @@ export const AdvanceTextEditor = ({
         resolvedMode === 'light' && "light",
         isFullscreen && "fullscreen",
         isCodeView && "code-mode-active",
+        isZenMode && "zen-mode-active",
         className
       )}
       style={dynamicStyles}
@@ -1152,6 +1354,33 @@ export const AdvanceTextEditor = ({
             <div className="toolbar-divider" />
 
             <div className="toolbar-group">
+              <ToolbarButton
+                title="Zen Focus Mode"
+                active={isZenMode}
+                onClick={() => setIsZenMode(!isZenMode)}
+                icon={isZenMode ? <EyeOff size={18} /> : <Eye size={18} />}
+                disabled={isCodeView}
+              />
+              
+              <div className="format-dropdown-container">
+                <ToolbarButton
+                  title="Export Document"
+                  active={activePicker === 'export'}
+                  onClick={() => setActivePicker(activePicker === 'export' ? null : 'export')}
+                  icon={<Download size={18} />}
+                  disabled={isCodeView}
+                />
+                {activePicker === 'export' && (
+                  <div className="dropdown-menu export-menu">
+                    <div className="dropdown-item" onClick={exportToMarkdown}>Export to Markdown (.md)</div>
+                    <div className="dropdown-item" onClick={exportToPDF}>Export to PDF / Print</div>
+                    <div className="dropdown-item" onClick={copyCleanHTML}>Copy Clean HTML</div>
+                  </div>
+                )}
+              </div>
+
+              <div className="toolbar-divider" />
+
               <ToolbarButton title="Clear Formatting" onClick={clearFormatting} icon={<Eraser size={18} />} disabled={isCodeView} />
               <ToolbarButton title="Toggle Code View" active={isCodeView} onClick={toggleCodeView} icon={<Code size={18} />} />
               <ToolbarButton title="Fullscreen" onClick={() => setIsFullscreen(!isFullscreen)} icon={isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />} />
@@ -1208,6 +1437,24 @@ export const AdvanceTextEditor = ({
                 </div>
               </div>
             )}
+            {/* Floating Selection Menu */}
+            {showFloatingMenu && (
+              <div 
+                className="floating-selection-menu"
+                style={{ 
+                  top: `${floatingMenuCoords.top}px`, 
+                  left: `${floatingMenuCoords.left}px` 
+                }}
+                onMouseDown={e => e.preventDefault()}
+              >
+                <button onClick={() => execCommand('bold')} title="Bold"><Bold size={14} /></button>
+                <button onClick={() => execCommand('italic')} title="Italic"><Italic size={14} /></button>
+                <button onClick={() => execCommand('underline')} title="Underline"><Underline size={14} /></button>
+                <button onClick={() => execCommand('strikeThrough')} title="Strikethrough"><Strikethrough size={14} /></button>
+                <button onClick={() => execCommand('backColor', '#fbbf24')} title="Highlight"><Highlighter size={14} /></button>
+              </div>
+            )}
+
             <div
               ref={editorRef}
               className={cn("custom-editable", isEditorEmpty && "is-empty")}
@@ -1215,8 +1462,8 @@ export const AdvanceTextEditor = ({
               suppressContentEditableWarning
               onInput={handleInput}
               onKeyDown={handleKeyDown}
-              onMouseUp={updateActiveFormats}
-              onKeyUp={updateActiveFormats}
+              onMouseUp={handleEditorInteraction}
+              onKeyUp={handleEditorInteraction}
               onBlur={saveSelection}
               onClick={handleEditorClick}
               data-placeholder={placeholder}
@@ -1226,12 +1473,41 @@ export const AdvanceTextEditor = ({
       </div>
 
       {/* Status Bar */}
-      <div className="custom-status-bar">
+      <div className="custom-status-bar" style={{ position: 'relative' }}>
+        {wordGoal > 0 && (
+          <div 
+            className="status-bar-progress" 
+            style={{ 
+              position: 'absolute', 
+              top: 0, 
+              left: 0, 
+              height: '2px', 
+              width: `${Math.min(100, (stats.words / wordGoal) * 100)}%`, 
+              background: 'linear-gradient(90deg, var(--editor-accent), #10b981)',
+              boxShadow: '0 0 8px var(--editor-accent)',
+              transition: 'width 0.3s ease'
+            }} 
+          />
+        )}
         <div className="status-item">
-          <div className="status-badge">
+          <div 
+            className="status-badge" 
+            onClick={() => { setGoalInput(wordGoal > 0 ? String(wordGoal) : ''); setShowGoalModal(true); }}
+            style={{ cursor: 'pointer' }}
+            title="Set target word goal"
+          >
             <BarChart size={12} className="mr-1.5" />
-            Words: <b>{stats.words}</b>
+            Words: <b>{stats.words}</b>{wordGoal > 0 && ` / ${wordGoal}`}
           </div>
+          {wordGoal > 0 && (
+            <>
+              <div className="status-divider" />
+              <div className="status-badge">
+                <Target size={12} className="mr-1.5" />
+                Goal: <b>{Math.min(100, Math.round((stats.words / wordGoal) * 100))}%</b>
+              </div>
+            </>
+          )}
           <div className="status-divider" />
           <div className="status-badge">
             <Type size={12} className="mr-1.5" />
@@ -1241,10 +1517,19 @@ export const AdvanceTextEditor = ({
 
         <div className="status-brand">
           <div className="brand-dot" />
-          <span>VELVET EDITOR</span>
+          <span>VELVET WRITER</span>
         </div>
 
         <div className="status-item">
+          {autoSaveKey && (
+            <>
+              <div className="autosave-status">
+                <div className={cn("autosave-dot", isSaved ? "saved" : "saving")} />
+                <span>{isSaved ? "Saved" : "Saving..."}</span>
+              </div>
+              <div className="status-divider" />
+            </>
+          )}
           <div className="mode-indicator">
             <div className={cn("mode-dot", isCodeView && "active")} />
             {isCodeView ? "HTML Mode" : "Rich Text Mode"}
@@ -1277,7 +1562,7 @@ export const AdvanceTextEditor = ({
                   Advanced Features
                 </button>
                 <button className={cn("help-tab-btn", helpActiveTab === 'about' && "active")} onClick={() => setHelpActiveTab('about')}>
-                  About Velvet
+                  About Velvet Writer
                 </button>
               </div>
 
@@ -1345,7 +1630,7 @@ export const AdvanceTextEditor = ({
 
                 {helpActiveTab === 'about' && (
                   <div className="help-tab-content about-velvet">
-                    <h3>Velvet Editor v{EDITOR_VERSION}</h3>
+                    <h3>Velvet Writer v{EDITOR_VERSION}</h3>
                     <p>A premium rich-text editing experience built with React and precision styling.</p>
                     <div className="brand-stats">
                       <div className="stat"><span>Performance</span> <b>99%</b></div>
@@ -1360,6 +1645,83 @@ export const AdvanceTextEditor = ({
 
             <div className="help-modal-footer">
               <button className="close-help-btn" onClick={() => setShowHelpModal(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Word Goal Modal */}
+      {showGoalModal && (
+        <div className="help-modal-overlay" onClick={() => setShowGoalModal(false)}>
+          <div className="help-modal-content goal-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '360px', padding: '24px' }}>
+            <div className="help-modal-header" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="flex items-center gap-2" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Target size={20} className="text-editor-accent" />
+                <h2>Set Word Goal</h2>
+              </div>
+              <button className="cancel-btn" onClick={() => setShowGoalModal(false)} style={{ background: 'none', border: 'none', color: 'var(--editor-muted)', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--editor-muted)', marginBottom: '8px' }}>Target Word Count (e.g. 500)</label>
+              <input
+                type="number"
+                min="0"
+                value={goalInput}
+                onChange={e => setGoalInput(e.target.value)}
+                placeholder="Enter word count goal (0 to disable)"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  background: 'var(--editor-bg)',
+                  border: '1px solid var(--editor-border)',
+                  color: 'var(--editor-text)',
+                  fontSize: '14px',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              {wordGoal > 0 && (
+                <button 
+                  onClick={() => { setWordGoal(0); setShowGoalModal(false); }}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    color: '#ef4444',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Clear Goal
+                </button>
+              )}
+              <button 
+                onClick={() => {
+                  const target = parseInt(goalInput, 10);
+                  setWordGoal(isNaN(target) ? 0 : target);
+                  setShowGoalModal(false);
+                }}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  background: 'var(--editor-accent)',
+                  border: 'none',
+                  color: 'white',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)'
+                }}
+              >
+                Save Target
+              </button>
             </div>
           </div>
         </div>

@@ -15,8 +15,9 @@ interface AdvanceTextEditorProps {
     maxHeight?: string | number;
     padding?: string;
     fontSize?: string;
+    autoSaveKey?: string;
 }
 
-declare const AdvanceTextEditor: ({ accentColor, mode, placeholder, onChange, className, variant, minHeight, maxHeight, padding, fontSize, initialValue }: AdvanceTextEditorProps) => react_jsx_runtime.JSX.Element;
+declare const AdvanceTextEditor: ({ accentColor, mode, placeholder, onChange, className, variant, minHeight, maxHeight, padding, fontSize, initialValue, autoSaveKey }: AdvanceTextEditorProps) => react_jsx_runtime.JSX.Element;
 
 export { AdvanceTextEditor, EDITOR_VERSION };

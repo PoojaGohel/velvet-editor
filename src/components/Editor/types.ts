@@ -29,4 +29,5 @@ export interface AdvanceTextEditorProps {
   maxHeight?: string | number;
   padding?: string;
   fontSize?: string;
+  autoSaveKey?: string;
 }

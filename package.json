@@ -1,6 +1,6 @@
 {
   "name": "velvet-writer",
-  "version": "1.2.7",
+  "version": "1.2.14",
   "description": "A premium, high-performance rich text editor for React with dynamic themes, glassmorphism UI, keyboard shortcuts, table insertion, code view, and full dark/light mode support.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -54,11 +54,6 @@
     "cms-editor",
     "content-editor"
   ],
-  "homepage": "https://github.com/PoojaGohel/velvet-editor#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/PoojaGohel/velvet-editor.git"
-  },
   "bugs": {
     "url": "https://github.com/PoojaGohel/velvet-editor/issues"
   },
@@ -66,7 +61,22 @@
     "name": "Pooja Gohel",
     "url": "https://github.com/PoojaGohel"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PoojaGohel/velvet-editor.git"
+  },
+  "homepage": "https://poojagohel.github.io/velvet-editor/",
   "license": "MIT",
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/PoojaGohel"
+    },
+    {
+      "type": "individual",
+      "url": "https://ko-fi.com/PoojaGohel"
+    }
+  ],
   "scripts": {
     "build": "tsup src/components/Editor/index.ts --format cjs,esm --dts --minify --clean",
     "lint": "eslint ."

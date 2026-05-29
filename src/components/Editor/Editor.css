@@ -668,8 +668,9 @@
   position: relative;
 }
 
-.custom-editable::selection {
-  background: var(--selection-bg);
+.custom-editable::selection,
+.custom-editable *::selection {
+  background: rgba(37, 99, 235, 0.25) !important;
 }
 
 .custom-editable:empty:before,
@@ -1506,4 +1507,175 @@ kbd {
   --epr-search-border-color: var(--editor-border) !important;
   --epr-hover-bg-color: var(--editor-btn-hover) !important;
   border: none !important;
+}
+
+/* ── Responsive Library Rules ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .custom-status-bar {
+    padding: 8px 12px !important;
+  }
+  
+  .status-brand {
+    display: none !important; /* Hide central branding on mobile/tablet to prevent overlapping text */
+  }
+}
+
+@media (max-width: 640px) {
+  .emoji-picker-wrapper {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 9999 !important;
+    width: 310px !important;
+    height: 400px !important;
+  }
+  .emoji-picker-wrapper .EmojiPickerReact {
+    width: 310px !important;
+    height: 400px !important;
+  }
+}
+
+/* ── Autosave Status Indicator ─────────────────────────────────── */
+.autosave-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+.autosave-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.autosave-dot.saved {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.autosave-dot.saving {
+  background: #f59e0b;
+  animation: autosave-pulse 1s infinite alternate;
+}
+
+@keyframes autosave-pulse {
+  0% { opacity: 0.4; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ── Floating Selection Menu ───────────────────────────────────── */
+.floating-selection-menu {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  background: var(--dropdown-bg);
+  border: 1px solid var(--editor-border);
+  border-radius: 8px;
+  padding: 4px;
+  gap: 2px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  z-index: 1010;
+  backdrop-filter: blur(16px);
+  animation: premiumFadeIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.floating-selection-menu button {
+  background: transparent;
+  border: none;
+  color: var(--editor-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.floating-selection-menu button:hover {
+  background: var(--editor-btn-hover);
+  color: var(--editor-accent);
+}
+
+/* ── Zen Focus Mode ────────────────────────────────────────────── */
+.custom-editor-container.zen-mode-active .custom-toolbar {
+  opacity: 0.1;
+  transform: translateY(-2px);
+  transition: all 0.5s ease;
+}
+
+.custom-editor-container.zen-mode-active .custom-toolbar:hover {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.custom-editor-container.zen-mode-active .custom-status-bar {
+  opacity: 0.1;
+  transition: all 0.5s ease;
+}
+
+.custom-editor-container.zen-mode-active .custom-status-bar:hover {
+  opacity: 1;
+}
+
+.custom-editor-container.zen-mode-active .custom-editable {
+  padding: 40px 10% !important;
+  max-width: 720px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+}
+
+.custom-editor-container.zen-mode-active .custom-editable > * {
+  opacity: 0.25;
+  filter: blur(0.3px);
+  transition: all 0.3s ease;
+}
+
+.custom-editor-container.zen-mode-active .custom-editable > *[data-active-block="true"],
+.custom-editor-container.zen-mode-active .custom-editable > *:focus {
+  opacity: 1;
+  filter: none;
+}
+
+/* ── Clean Export Dropdown ────────────────────────────────────── */
+.export-menu {
+  min-width: 220px !important;
+}
+
+/* ── Print Media Overrides for PDF Export ──────────────────────── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .custom-editor-container, .custom-editor-container * {
+    visibility: visible;
+  }
+  .custom-editor-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none !important;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  .custom-toolbar, .custom-status-bar, .img-resize-panel, .dropdown-menu {
+    display: none !important;
+  }
+  .custom-editable {
+    border: none !important;
+    background: transparent !important;
+    color: black !important;
+    padding: 0 !important;
+  }
 }
