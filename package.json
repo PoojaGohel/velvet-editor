@@ -1,7 +1,7 @@
 {
   "name": "velvet-writer",
-  "version": "1.2.14",
-  "description": "A premium, high-performance rich text editor for React with dynamic themes, glassmorphism UI, keyboard shortcuts, table insertion, code view, and full dark/light mode support.",
+  "version": "1.2.16",
+  "description": "The best rich text editor for React. A premium, high-performance WYSIWYG text editor for React with dynamic themes, glassmorphism UI, keyboard shortcuts, and full dark/light mode support.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -52,7 +52,16 @@
     "document-editor",
     "blog-editor",
     "cms-editor",
-    "content-editor"
+    "content-editor",
+    "tiptap-alternative",
+    "slate-alternative",
+    "quill-alternative",
+    "notion-clone",
+    "notion-like-editor",
+    "notion-style-editor",
+    "slash-commands",
+    "block-style-editor",
+    "floating-toolbar"
   ],
   "bugs": {
     "url": "https://github.com/PoojaGohel/velvet-editor/issues"

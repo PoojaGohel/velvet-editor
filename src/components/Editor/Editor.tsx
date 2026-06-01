@@ -6,7 +6,7 @@ import {
   Superscript, Subscript, Palette, Highlighter, X, Check, Code, Type,
   Plus, Image as ImageIcon, Minus, Quote, Table as TableIcon, Maximize,
   Minimize, Undo, Redo, Eraser, BarChart, Copy, FileCode, HelpCircle, ALargeSmall,
-  Smile, Target, Download, Eye, EyeOff
+  Smile, Target, Download, Eye, EyeOff, Trash2
 } from 'lucide-react';
 export { EDITOR_VERSION } from './utils';
 import { cn, COLORS, hexToRgb, FONTS, FONT_SIZES, EmojiTheme, EDITOR_VERSION } from './utils';
@@ -56,7 +56,7 @@ export const AdvanceTextEditor = ({
   const [customTable, setCustomTable] = useState({ r: 3, c: 3 });
   const [showCustomTable, setShowCustomTable] = useState(false);
   const [isCodeView, setIsCodeView] = useState(false);
-  const [htmlContent, setHtmlContent] = useState(initialValue);
+  const [htmlContent, setHtmlContent] = useState(initialValue || '<p><br></p>');
   const [codeBackup, setCodeBackup] = useState('');
   const [codeFontSize, setCodeFontSize] = useState(14);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -76,6 +76,158 @@ export const AdvanceTextEditor = ({
   const [floatingMenuCoords, setFloatingMenuCoords] = useState({ top: 0, left: 0 });
   const lastHtmlRef = useRef(htmlContent);
 
+  const [showTableActions, setShowTableActions] = useState(false);
+  const [tableActionsCoords, setTableActionsCoords] = useState({ top: 0, left: 0 });
+  const [activeTableCell, setActiveTableCell] = useState<HTMLTableCellElement | null>(null);
+
+  function insertRow(below: boolean) {
+    if (!activeTableCell) return;
+    const row = activeTableCell.closest('tr');
+    const table = activeTableCell.closest('table');
+    if (row && table) {
+      const newRow = document.createElement('tr');
+      const cellCount = row.children.length;
+      for (let i = 0; i < cellCount; i++) {
+        const newCell = document.createElement('td');
+        newCell.style.border = '1px solid #1e293b';
+        newCell.style.padding = '8px';
+        newCell.style.minHeight = '1.5em';
+        newCell.innerHTML = '&nbsp;';
+        newRow.appendChild(newCell);
+      }
+      if (below) {
+        row.after(newRow);
+      } else {
+        row.before(newRow);
+      }
+      handleInput();
+    }
+  }
+
+  function insertColumn(right: boolean) {
+    if (!activeTableCell) return;
+    const cell = activeTableCell;
+    const row = cell.closest('tr');
+    const table = cell.closest('table');
+    if (row && table) {
+      const index = Array.from(row.children).indexOf(cell);
+      const rows = Array.from(table.querySelectorAll('tr'));
+      
+      rows.forEach(r => {
+        const targetCell = r.children[index];
+        if (targetCell) {
+          const newCell = document.createElement('td');
+          newCell.style.border = '1px solid #1e293b';
+          newCell.style.padding = '8px';
+          newCell.style.minHeight = '1.5em';
+          newCell.innerHTML = '&nbsp;';
+          if (right) {
+            targetCell.after(newCell);
+          } else {
+            targetCell.before(newCell);
+          }
+        }
+      });
+      handleInput();
+    }
+  }
+
+  function deleteRow() {
+    if (!activeTableCell) return;
+    const row = activeTableCell.closest('tr');
+    const table = activeTableCell.closest('table');
+    if (row && table) {
+      const rowCount = table.querySelectorAll('tr').length;
+      if (rowCount <= 1) {
+        table.remove();
+      } else {
+        row.remove();
+      }
+      setShowTableActions(false);
+      setActiveTableCell(null);
+      handleInput();
+    }
+  }
+
+  function deleteColumn() {
+    if (!activeTableCell) return;
+    const cell = activeTableCell;
+    const row = cell.closest('tr');
+    const table = cell.closest('table');
+    if (row && table) {
+      const index = Array.from(row.children).indexOf(cell);
+      const cellCount = row.children.length;
+      
+      if (cellCount <= 1) {
+        table.remove();
+      } else {
+        const rows = Array.from(table.querySelectorAll('tr'));
+        rows.forEach(r => {
+          const targetCell = r.children[index];
+          if (targetCell) targetCell.remove();
+        });
+      }
+      setShowTableActions(false);
+      setActiveTableCell(null);
+      handleInput();
+    }
+  }
+
+  function deleteTable() {
+    if (!activeTableCell) return;
+    const table = activeTableCell.closest('table');
+    if (table) {
+      table.remove();
+      setShowTableActions(false);
+      setActiveTableCell(null);
+      handleInput();
+    }
+  }
+
+  const [showSlashMenu, setShowSlashMenu] = useState(false);
+  const [slashMenuCoords, setSlashMenuCoords] = useState({ top: 0, left: 0 });
+  const [slashMenuQuery, setSlashMenuQuery] = useState('');
+  const [slashMenuSelectedIndex, setSlashMenuSelectedIndex] = useState(0);
+
+  const cleanBloatedStyles = useCallback((html: string): string => {
+    if (typeof window !== 'undefined') {
+      try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const spans = doc.querySelectorAll('span');
+        let modified = false;
+        spans.forEach(span => {
+          const style = span.getAttribute('style');
+          if (style) {
+            const cleaned = style.replace(/font-style\s*:\s*normal\s*;?/gi, '')
+                                 .replace(/font-weight\s*:\s*normal\s*;?/gi, '')
+                                 .replace(/text-decoration\s*:\s*none\s*;?/gi, '')
+                                 .trim();
+            if (cleaned === '' || cleaned === ';') {
+              const parent = span.parentNode;
+              if (parent) {
+                while (span.firstChild) {
+                  parent.insertBefore(span.firstChild, span);
+                }
+                parent.removeChild(span);
+                modified = true;
+              }
+            } else if (cleaned !== style) {
+              span.setAttribute('style', cleaned);
+              modified = true;
+            }
+          }
+        });
+        return modified ? doc.body.innerHTML : html;
+      } catch {
+        return html;
+      }
+    }
+    return html;
+  }, []);
+
+
+
 
   const updateStats = useCallback((html: string) => {
     const text = html
@@ -91,11 +243,12 @@ export const AdvanceTextEditor = ({
   // Sync external initialValue changes (like dynamic value updates or resets) into editor
   useEffect(() => {
     if (initialValue !== undefined && initialValue !== lastHtmlRef.current) {
-      setHtmlContent(initialValue);
+      const val = initialValue || '<p><br></p>';
+      setHtmlContent(val);
       if (editorRef.current) {
-        editorRef.current.innerHTML = initialValue;
-        lastHtmlRef.current = initialValue;
-        updateStats(initialValue);
+        editorRef.current.innerHTML = val;
+        lastHtmlRef.current = val;
+        updateStats(val);
       }
     }
   }, [initialValue, updateStats]);
@@ -145,6 +298,32 @@ export const AdvanceTextEditor = ({
         setShowFloatingMenu(true);
       }
     }
+
+    // 3. Handle Floating Table Actions Menu
+    if (selection.rangeCount > 0 && editorRef.current) {
+      const range = selection.getRangeAt(0);
+      let container = range.commonAncestorContainer as HTMLElement;
+      if (container.nodeType === 3) container = container.parentElement as HTMLElement;
+      
+      const cell = container.closest('td, th') as HTMLTableCellElement;
+      if (cell && editorRef.current.contains(cell)) {
+        const cellRect = cell.getBoundingClientRect();
+        const editorRect = editorRef.current.getBoundingClientRect();
+        
+        const top = cellRect.top - editorRect.top - 40 + editorRef.current.scrollTop;
+        const left = cellRect.left - editorRect.left;
+        
+        setTableActionsCoords({
+          top: Math.max(0, top),
+          left: Math.max(10, Math.min(editorRect.width - 450, left))
+        });
+        setActiveTableCell(cell);
+        setShowTableActions(true);
+        return;
+      }
+    }
+    setShowTableActions(false);
+    setActiveTableCell(null);
   }, []);
 
   const exportToMarkdown = () => {
@@ -280,18 +459,56 @@ export const AdvanceTextEditor = ({
   const handleEditorInteraction = useCallback(() => {
     updateActiveFormats();
     updateActiveBlockAndFloatingMenu();
-  }, [updateActiveFormats, updateActiveBlockAndFloatingMenu]);
+    checkSlashCommandTrigger();
+  }, [updateActiveFormats, updateActiveBlockAndFloatingMenu, checkSlashCommandTrigger]);
+
+  const handleFocus = useCallback(() => {
+    if (editorRef.current) {
+      const html = editorRef.current.innerHTML;
+      if (html === '' || html === '<br>' || html === '<div><br></div>' || html === '<div></div>') {
+        editorRef.current.innerHTML = '<p><br></p>';
+        const selection = window.getSelection();
+        if (selection) {
+          const range = document.createRange();
+          const p = editorRef.current.querySelector('p');
+          if (p) {
+            range.selectNodeContents(p);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        }
+      }
+    }
+  }, []);
 
   const handleInput = useCallback(() => {
     if (editorRef.current) {
-      const html = editorRef.current.innerHTML;
+      let html = editorRef.current.innerHTML;
+      
+      html = cleanBloatedStyles(html);
+
+      if (html === '' || html === '<br>' || html === '<div><br></div>' || html === '<div></div>') {
+        html = '<p><br></p>';
+        editorRef.current.innerHTML = html;
+        const range = document.createRange();
+        const sel = window.getSelection();
+        if (editorRef.current.firstChild) {
+          range.selectNodeContents(editorRef.current.firstChild);
+          range.collapse(true);
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+        }
+      }
+
       lastHtmlRef.current = html;
       setHtmlContent(html);
       updateStats(html);
       if (onChange) onChange(html);
       updateActiveFormats();
+      checkSlashCommandTrigger();
     }
-  }, [onChange, updateStats, setHtmlContent, updateActiveFormats]);
+  }, [onChange, updateStats, setHtmlContent, updateActiveFormats, cleanBloatedStyles, checkSlashCommandTrigger]);
 
   // Sync htmlContent to editor DOM only if change came from outside (e.g. toolbar)
   useEffect(() => {
@@ -547,6 +764,32 @@ export const AdvanceTextEditor = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (isCodeView) return;
 
+    // Slash command keyboard navigation
+    if (showSlashMenu && filteredSlashCommands.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSlashMenuSelectedIndex(prev => (prev + 1) % filteredSlashCommands.length);
+        return;
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSlashMenuSelectedIndex(prev => (prev - 1 + filteredSlashCommands.length) % filteredSlashCommands.length);
+        return;
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const cmd = filteredSlashCommands[slashMenuSelectedIndex];
+        if (cmd) {
+          executeSlashCommand(cmd.action);
+        } else {
+          setShowSlashMenu(false);
+        }
+        return;
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowSlashMenu(false);
+        return;
+      }
+    }
+
     // Markdown Auto-formatting Shortcuts on Space
     if (e.key === ' ') {
       const selection = window.getSelection();
@@ -567,30 +810,187 @@ export const AdvanceTextEditor = ({
             e.preventDefault();
             document.execCommand('delete', false);
             execCommand('formatBlock', 'h1');
+            return;
           } else if (trimmedText === '##') {
             e.preventDefault();
             document.execCommand('delete', false);
             document.execCommand('delete', false);
             execCommand('formatBlock', 'h2');
+            return;
           } else if (trimmedText === '###') {
             e.preventDefault();
             document.execCommand('delete', false);
             document.execCommand('delete', false);
             document.execCommand('delete', false);
             execCommand('formatBlock', 'h3');
+            return;
           } else if (trimmedText === '>') {
             e.preventDefault();
             document.execCommand('delete', false);
             execCommand('formatBlock', 'blockquote');
+            return;
           } else if (trimmedText === '-' || trimmedText === '*') {
             e.preventDefault();
             document.execCommand('delete', false);
             execCommand('insertUnorderedList');
+            return;
           } else if (trimmedText === '1.') {
             e.preventDefault();
             document.execCommand('delete', false);
             document.execCommand('delete', false);
             execCommand('insertOrderedList');
+            return;
+          }
+        }
+
+        // Inline markdown formatting on Space
+        if (container.nodeType === 3) {
+          const textNode = container as Text;
+          const text = textNode.data;
+          const offset = range.startOffset;
+          const textBeforeCursor = text.substring(0, offset);
+          
+          const boldMatch = textBeforeCursor.match(/\*\*([^*]+)\*\*$/);
+          const italicMatch = textBeforeCursor.match(/\*([^*]+)\*$/) || textBeforeCursor.match(/_([^_]+)_$/);
+          const strikeMatch = textBeforeCursor.match(/~~([^~]+)~~$/);
+          const codeMatch = textBeforeCursor.match(/`([^`]+)`$/);
+
+          if (boldMatch) {
+            e.preventDefault();
+            const fullMatch = boldMatch[0];
+            const content = boldMatch[1];
+            const startIdx = offset - fullMatch.length;
+            
+            const beforeText = textBeforeCursor.substring(0, startIdx);
+            const afterText = text.substring(offset);
+            textNode.data = beforeText;
+            
+            const boldEl = document.createElement('strong');
+            boldEl.textContent = content;
+            
+            const spaceNode = document.createTextNode('\u00A0');
+            
+            const parent = textNode.parentNode;
+            if (parent) {
+              const nextSibling = textNode.nextSibling;
+              parent.insertBefore(boldEl, nextSibling);
+              parent.insertBefore(spaceNode, nextSibling);
+              if (afterText) {
+                const afterNode = document.createTextNode(afterText);
+                parent.insertBefore(afterNode, nextSibling);
+              }
+              
+              const newRange = document.createRange();
+              newRange.setStart(spaceNode, 1);
+              newRange.setEnd(spaceNode, 1);
+              selection.removeAllRanges();
+              selection.addRange(newRange);
+            }
+            handleInput();
+            return;
+          } else if (italicMatch) {
+            e.preventDefault();
+            const fullMatch = italicMatch[0];
+            const content = italicMatch[1];
+            const startIdx = offset - fullMatch.length;
+            
+            const beforeText = textBeforeCursor.substring(0, startIdx);
+            const afterText = text.substring(offset);
+            textNode.data = beforeText;
+            
+            const emEl = document.createElement('em');
+            emEl.textContent = content;
+            
+            const spaceNode = document.createTextNode('\u00A0');
+            
+            const parent = textNode.parentNode;
+            if (parent) {
+              const nextSibling = textNode.nextSibling;
+              parent.insertBefore(emEl, nextSibling);
+              parent.insertBefore(spaceNode, nextSibling);
+              if (afterText) {
+                const afterNode = document.createTextNode(afterText);
+                parent.insertBefore(afterNode, nextSibling);
+              }
+              
+              const newRange = document.createRange();
+              newRange.setStart(spaceNode, 1);
+              newRange.setEnd(spaceNode, 1);
+              selection.removeAllRanges();
+              selection.addRange(newRange);
+            }
+            handleInput();
+            return;
+          } else if (strikeMatch) {
+            e.preventDefault();
+            const fullMatch = strikeMatch[0];
+            const content = strikeMatch[1];
+            const startIdx = offset - fullMatch.length;
+            
+            const beforeText = textBeforeCursor.substring(0, startIdx);
+            const afterText = text.substring(offset);
+            textNode.data = beforeText;
+            
+            const strikeEl = document.createElement('s');
+            strikeEl.textContent = content;
+            
+            const spaceNode = document.createTextNode('\u00A0');
+            
+            const parent = textNode.parentNode;
+            if (parent) {
+              const nextSibling = textNode.nextSibling;
+              parent.insertBefore(strikeEl, nextSibling);
+              parent.insertBefore(spaceNode, nextSibling);
+              if (afterText) {
+                const afterNode = document.createTextNode(afterText);
+                parent.insertBefore(afterNode, nextSibling);
+              }
+              
+              const newRange = document.createRange();
+              newRange.setStart(spaceNode, 1);
+              newRange.setEnd(spaceNode, 1);
+              selection.removeAllRanges();
+              selection.addRange(newRange);
+            }
+            handleInput();
+            return;
+          } else if (codeMatch) {
+            e.preventDefault();
+            const fullMatch = codeMatch[0];
+            const content = codeMatch[1];
+            const startIdx = offset - fullMatch.length;
+            
+            const beforeText = textBeforeCursor.substring(0, startIdx);
+            const afterText = text.substring(offset);
+            textNode.data = beforeText;
+            
+            const codeEl = document.createElement('code');
+            codeEl.textContent = content;
+            codeEl.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+            codeEl.style.padding = '2px 4px';
+            codeEl.style.borderRadius = '4px';
+            codeEl.style.fontFamily = 'monospace';
+            
+            const spaceNode = document.createTextNode('\u00A0');
+            
+            const parent = textNode.parentNode;
+            if (parent) {
+              const nextSibling = textNode.nextSibling;
+              parent.insertBefore(codeEl, nextSibling);
+              parent.insertBefore(spaceNode, nextSibling);
+              if (afterText) {
+                const afterNode = document.createTextNode(afterText);
+                parent.insertBefore(afterNode, nextSibling);
+              }
+              
+              const newRange = document.createRange();
+              newRange.setStart(spaceNode, 1);
+              newRange.setEnd(spaceNode, 1);
+              selection.removeAllRanges();
+              selection.addRange(newRange);
+            }
+            handleInput();
+            return;
           }
         }
       }
@@ -628,8 +1028,82 @@ export const AdvanceTextEditor = ({
       e.preventDefault();
       execCommand('redo');
     }
-    // Tab (Indent/Outdent)
+    // Tab (Indent/Outdent or Table cell navigation)
     else if (e.key === 'Tab') {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        let container = range.commonAncestorContainer as HTMLElement;
+        if (container.nodeType === 3) container = container.parentElement as HTMLElement;
+        
+        const cell = container.closest('td, th');
+        if (cell) {
+          e.preventDefault();
+          const table = cell.closest('table');
+          if (table) {
+            const cells = Array.from(table.querySelectorAll('td, th')) as HTMLElement[];
+            const index = cells.indexOf(cell as HTMLElement);
+            
+            if (e.shiftKey) {
+              // Shift+Tab: move to previous cell
+              if (index > 0) {
+                const prevCell = cells[index - 1];
+                const newRange = document.createRange();
+                newRange.selectNodeContents(prevCell);
+                newRange.collapse(false);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+                prevCell.focus();
+              }
+            } else {
+              // Tab: move to next cell
+              if (index < cells.length - 1) {
+                const nextCell = cells[index + 1];
+                const newRange = document.createRange();
+                newRange.selectNodeContents(nextCell);
+                newRange.collapse(false);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+                nextCell.focus();
+              } else {
+                // Last cell: Append a new row!
+                const row = cell.closest('tr');
+                if (row) {
+                  const parent = row.parentElement;
+                  if (parent) {
+                    const newRow = document.createElement('tr');
+                    const cellCount = row.children.length;
+                    for (let i = 0; i < cellCount; i++) {
+                      const newCell = document.createElement('td');
+                      newCell.style.border = '1px solid #1e293b';
+                      newCell.style.padding = '8px';
+                      newCell.style.minHeight = '1.5em';
+                      newCell.innerHTML = '&nbsp;';
+                      newRow.appendChild(newCell);
+                    }
+                    parent.appendChild(newRow);
+                    
+                    // Focus first cell of new row
+                    const firstNewCell = newRow.firstChild as HTMLElement;
+                    if (firstNewCell) {
+                      const newRange = document.createRange();
+                      newRange.selectNodeContents(firstNewCell);
+                      newRange.collapse(false);
+                      selection.removeAllRanges();
+                      selection.addRange(newRange);
+                      firstNewCell.focus();
+                    }
+                    handleInput();
+                  }
+                }
+              }
+            }
+          }
+          return;
+        }
+      }
+
+      // Standard Indent/Outdent
       e.preventDefault();
       if (e.shiftKey) {
         execCommand('outdent');
@@ -646,17 +1120,21 @@ export const AdvanceTextEditor = ({
   useEffect(() => {
     const handleSelectionChange = () => {
       requestAnimationFrame(updateActiveFormats);
+      requestAnimationFrame(checkSlashCommandTrigger);
     };
     document.addEventListener('selectionchange', handleSelectionChange);
 
     // Click outside handler
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.format-dropdown-container') && !target.closest('.picker-popup')) {
+      if (!target.closest('.format-dropdown-container') && !target.closest('.picker-popup') && !target.closest('.floating-slash-menu') && !target.closest('.floating-table-actions')) {
         setShowFormatDropdown(false);
         setShowFontDropdown(false);
         setShowFontSizeDropdown(false);
         setActivePicker(null);
+        setShowSlashMenu(false);
+        setShowTableActions(false);
+        setActiveTableCell(null);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -665,7 +1143,7 @@ export const AdvanceTextEditor = ({
       document.removeEventListener('selectionchange', handleSelectionChange);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [updateActiveFormats]);
+  }, [updateActiveFormats, checkSlashCommandTrigger]);
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML === '') {
@@ -800,6 +1278,171 @@ export const AdvanceTextEditor = ({
     }
   };
 
+  interface SlashCommandItem {
+    id: string;
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    action: () => void;
+  }
+
+  const slashCommands = useMemo<SlashCommandItem[]>(() => [
+    {
+      id: 'p',
+      title: 'Paragraph',
+      description: 'Start writing with plain text.',
+      icon: <Type size={16} />,
+      action: () => execCommand('formatBlock', 'p')
+    },
+    {
+      id: 'h1',
+      title: 'Heading 1',
+      description: 'Big section heading.',
+      icon: <Type size={16} style={{ fontWeight: 'bold' }} />,
+      action: () => execCommand('formatBlock', 'h1')
+    },
+    {
+      id: 'h2',
+      title: 'Heading 2',
+      description: 'Medium section heading.',
+      icon: <Type size={16} />,
+      action: () => execCommand('formatBlock', 'h2')
+    },
+    {
+      id: 'h3',
+      title: 'Heading 3',
+      description: 'Small section heading.',
+      icon: <Type size={16} />,
+      action: () => execCommand('formatBlock', 'h3')
+    },
+    {
+      id: 'ul',
+      title: 'Bulleted List',
+      description: 'Create a simple bulleted list.',
+      icon: <List size={16} />,
+      action: () => execCommand('insertUnorderedList')
+    },
+    {
+      id: 'ol',
+      title: 'Numbered List',
+      description: 'Create a list with numbering.',
+      icon: <ListOrdered size={16} />,
+      action: () => execCommand('insertOrderedList')
+    },
+    {
+      id: 'quote',
+      title: 'Blockquote',
+      description: 'Capture a quote.',
+      icon: <Quote size={16} />,
+      action: () => execCommand('formatBlock', 'blockquote')
+    },
+    {
+      id: 'table',
+      title: 'Table',
+      description: 'Insert a 3x3 table.',
+      icon: <TableIcon size={16} />,
+      action: () => insertTable(3, 3)
+    },
+    {
+      id: 'image',
+      title: 'Image',
+      description: 'Insert an image via URL.',
+      icon: <ImageIcon size={16} />,
+      action: () => togglePicker('image')
+    },
+    {
+      id: 'code',
+      title: 'Code View',
+      description: 'Toggle raw HTML editor.',
+      icon: <Code size={16} />,
+      action: () => toggleCodeView()
+    },
+    {
+      id: 'clear',
+      title: 'Clear Formatting',
+      description: 'Remove all formatting styles.',
+      icon: <Eraser size={16} />,
+      action: () => clearFormatting()
+    }
+  ], [insertTable, clearFormatting, isCodeView]);
+
+  const filteredSlashCommands = useMemo(() => {
+    if (!slashMenuQuery) return slashCommands;
+    const query = slashMenuQuery.toLowerCase();
+    return slashCommands.filter(
+      cmd => cmd.title.toLowerCase().includes(query) || cmd.description.toLowerCase().includes(query)
+    );
+  }, [slashCommands, slashMenuQuery]);
+
+  function executeSlashCommand(action: () => void) {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const container = range.commonAncestorContainer;
+      
+      if (container.nodeType === 3) {
+        const textNode = container as Text;
+        const text = textNode.data;
+        const offset = range.startOffset;
+        
+        const lastSlashIdx = text.substring(0, offset).lastIndexOf('/');
+        if (lastSlashIdx !== -1) {
+          const beforeText = text.substring(0, lastSlashIdx);
+          const afterText = text.substring(offset);
+          textNode.data = beforeText + afterText;
+          
+          const newRange = document.createRange();
+          newRange.setStart(textNode, lastSlashIdx);
+          newRange.setEnd(textNode, lastSlashIdx);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+        }
+      }
+    }
+    
+    action();
+    setShowSlashMenu(false);
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
+  }
+
+  function checkSlashCommandTrigger() {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0 && editorRef.current) {
+      const range = selection.getRangeAt(0);
+      const container = range.commonAncestorContainer;
+      
+      if (container.nodeType === 3) {
+        const textNode = container as Text;
+        const text = textNode.data;
+        const offset = range.startOffset;
+        
+        const lastSlashIdx = text.substring(0, offset).lastIndexOf('/');
+        if (lastSlashIdx !== -1) {
+          const queryText = text.substring(lastSlashIdx + 1, offset);
+          
+          if (!/\s/.test(queryText)) {
+            const beforeChar = lastSlashIdx > 0 ? text[lastSlashIdx - 1] : '';
+            if (lastSlashIdx === 0 || /\s/.test(beforeChar)) {
+              const rect = range.getBoundingClientRect();
+              const editorRect = editorRef.current.getBoundingClientRect();
+              
+              setSlashMenuCoords({
+                top: rect.bottom - editorRect.top + 8 + editorRef.current.scrollTop,
+                left: Math.max(10, Math.min(editorRect.width - 270, rect.left - editorRect.left))
+              });
+              setSlashMenuQuery(queryText);
+              setShowSlashMenu(true);
+              return;
+            }
+          }
+        }
+      }
+    }
+    setShowSlashMenu(false);
+  }
+
   const cancelCodeView = () => {
     setHtmlContent(codeBackup);
     setIsCodeView(false);
@@ -910,7 +1553,7 @@ export const AdvanceTextEditor = ({
             <div className="toolbar-group">
               <div className="format-dropdown-container">
                 <div
-                  className="format-dropdown"
+                  className={cn("format-dropdown", (currentFormat !== 'Paragraph' || showFormatDropdown) && "active")}
                   onMouseDown={(e) => { e.preventDefault(); if (!isCodeView) { saveSelection(); const next = !showFormatDropdown; closeAllPopups('format'); setShowFormatDropdown(next); } }}
                 >
                   <span>{currentFormat}</span>
@@ -934,7 +1577,7 @@ export const AdvanceTextEditor = ({
             <div className="toolbar-group">
               <div className="format-dropdown-container">
                 <div
-                  className="format-dropdown"
+                  className={cn("format-dropdown", (currentFont !== 'Default' && currentFont !== 'Outfit' || showFontDropdown) && "active")}
                   onMouseDown={(e) => { e.preventDefault(); if (!isCodeView) { saveSelection(); const next = !showFontDropdown; closeAllPopups('font'); setShowFontDropdown(next); } }}
                 >
                   <Type size={16} className="mr-2" />
@@ -965,7 +1608,7 @@ export const AdvanceTextEditor = ({
             <div className="toolbar-group">
               <div className="format-dropdown-container">
                 <div
-                  className="format-dropdown"
+                  className={cn("format-dropdown", (currentFontSize !== '16px' || showFontSizeDropdown) && "active")}
                   onMouseDown={(e) => { e.preventDefault(); if (!isCodeView) { saveSelection(); const next = !showFontSizeDropdown; closeAllPopups('fontSize'); setShowFontSizeDropdown(next); } }}
                 >
                   <span className="truncate max-w-[60px]">{currentFontSize}</span>
@@ -1455,12 +2098,66 @@ export const AdvanceTextEditor = ({
               </div>
             )}
 
+            {showSlashMenu && filteredSlashCommands.length > 0 && (
+              <div 
+                className="floating-slash-menu"
+                style={{ 
+                  top: `${slashMenuCoords.top}px`, 
+                  left: `${slashMenuCoords.left}px` 
+                }}
+                onMouseDown={e => e.preventDefault()}
+              >
+                <div className="slash-menu-header">Basic Blocks</div>
+                <div className="slash-menu-list">
+                  {filteredSlashCommands.map((cmd, idx) => (
+                    <div
+                      key={cmd.id}
+                      className={cn(
+                        "slash-menu-item",
+                        idx === slashMenuSelectedIndex && "selected"
+                      )}
+                      onClick={() => executeSlashCommand(cmd.action)}
+                      onMouseEnter={() => setSlashMenuSelectedIndex(idx)}
+                    >
+                      <div className="slash-menu-icon">{cmd.icon}</div>
+                      <div className="slash-menu-info">
+                        <div className="slash-menu-title">{cmd.title}</div>
+                        <div className="slash-menu-desc">{cmd.description}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {showTableActions && (
+              <div 
+                className="floating-table-actions"
+                style={{ 
+                  top: `${tableActionsCoords.top}px`, 
+                  left: `${tableActionsCoords.left}px` 
+                }}
+                onMouseDown={e => e.preventDefault()}
+              >
+                <button onClick={() => insertRow(false)} title="Insert Row Above"><Plus size={12} /> Row Above</button>
+                <button onClick={() => insertRow(true)} title="Insert Row Below"><Plus size={12} /> Row Below</button>
+                <div className="divider" />
+                <button onClick={() => insertColumn(false)} title="Insert Column Left"><Plus size={12} /> Col Left</button>
+                <button onClick={() => insertColumn(true)} title="Insert Column Right"><Plus size={12} /> Col Right</button>
+                <div className="divider" />
+                <button onClick={deleteRow} title="Delete Row" className="btn-danger"><Trash2 size={12} /> Row</button>
+                <button onClick={deleteColumn} title="Delete Column" className="btn-danger"><Trash2 size={12} /> Col</button>
+                <button onClick={deleteTable} title="Delete Table" className="btn-danger"><Trash2 size={12} /> Table</button>
+              </div>
+            )}
+
             <div
               ref={editorRef}
               className={cn("custom-editable", isEditorEmpty && "is-empty")}
               contentEditable={!isCodeView}
               suppressContentEditableWarning
               onInput={handleInput}
+              onFocus={handleFocus}
               onKeyDown={handleKeyDown}
               onMouseUp={handleEditorInteraction}
               onKeyUp={handleEditorInteraction}
@@ -1581,6 +2278,16 @@ export const AdvanceTextEditor = ({
                       <div className="shortcut-row"><span>Select All</span> <kbd>Ctrl + A</kbd></div>
                       <div className="shortcut-row"><span>Insert Link</span> <kbd>Ctrl + K</kbd></div>
                     </div>
+
+                    <h3 style={{ marginTop: '24px' }}>Markdown Auto-Shortcuts</h3>
+                    <div className="shortcut-grid">
+                      <div className="shortcut-row"><span>Heading 1</span> <kbd># Space</kbd></div>
+                      <div className="shortcut-row"><span>Heading 2</span> <kbd>## Space</kbd></div>
+                      <div className="shortcut-row"><span>Heading 3</span> <kbd>### Space</kbd></div>
+                      <div className="shortcut-row"><span>Blockquote</span> <kbd>&gt; Space</kbd></div>
+                      <div className="shortcut-row"><span>Bullet List</span> <kbd>- Space</kbd></div>
+                      <div className="shortcut-row"><span>Number List</span> <kbd>1. Space</kbd></div>
+                    </div>
                   </div>
                 )}
 
@@ -1588,6 +2295,10 @@ export const AdvanceTextEditor = ({
                   <div className="help-tab-content">
                     <h3>Keyboard Navigation</h3>
                     <div className="navigation-list">
+                      <div className="nav-item">
+                        <kbd>/</kbd>
+                        <p>Open the Notion-style Slash Command menu.</p>
+                      </div>
                       <div className="nav-item">
                         <kbd>Tab</kbd>
                         <p>Indent list item or create nested list.</p>
