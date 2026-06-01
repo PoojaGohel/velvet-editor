@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://poojagohel.github.io/velvet-editor/sitemap.xml
