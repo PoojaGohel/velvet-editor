@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from 'react';
 import {
   Bold, Italic, Underline, Strikethrough,
   List, ListOrdered, AlignLeft, AlignCenter,
@@ -12,9 +12,10 @@ export { EDITOR_VERSION } from './utils';
 import { cn, COLORS, hexToRgb, FONTS, FONT_SIZES, EmojiTheme, EDITOR_VERSION } from './utils';
 import './Editor.css';
 import type { AdvanceTextEditorProps } from './types';
-
-// Lazy load the heavy emoji picker library
-const EmojiPicker = lazy(() => import('emoji-picker-react'));
+import type { Theme as EmojiPickerTheme } from 'emoji-picker-react';
+import { EmojiPicker, useEmojiPickerAvailable } from './emojiPicker';
+import { safeGetItem, safeSetItem } from './storage';
+import { EditorErrorBoundary } from './EditorErrorBoundary';
 
 export const AdvanceTextEditor = ({
   accentColor = '#a855f7',
@@ -36,6 +37,7 @@ export const AdvanceTextEditor = ({
   const selectionRef = useRef<Range | null>(null);
 
   const [isSaved, setIsSaved] = useState(true);
+  const emojiPickerAvailable = useEmojiPickerAvailable();
 
   const [activeFormats, setActiveFormats] = useState<string[]>([]);
   const [systemMode, setSystemMode] = useState<'light' | 'dark'>('dark');
@@ -330,7 +332,7 @@ export const AdvanceTextEditor = ({
     if (!editorRef.current) return;
     const html = editorRef.current.innerHTML;
     
-    let md = html
+    const md = html
       .replace(/<h1>(.*?)<\/h1>/gi, '# $1\n\n')
       .replace(/<h2>(.*?)<\/h2>/gi, '## $1\n\n')
       .replace(/<h3>(.*?)<\/h3>/gi, '### $1\n\n')
@@ -369,7 +371,7 @@ export const AdvanceTextEditor = ({
 
   const copyCleanHTML = () => {
     if (!editorRef.current) return;
-    let clean = editorRef.current.innerHTML
+    const clean = editorRef.current.innerHTML
       .replace(/contenteditable="[^"]*"/gi, '')
       .replace(/spellcheck="[^"]*"/gi, '')
       .replace(/data-placeholder="[^"]*"/gi, '')
@@ -453,7 +455,9 @@ export const AdvanceTextEditor = ({
         const characters = text.length;
         setStats({ words, characters });
       }
-    } catch { }
+    } catch {
+      // Selection APIs can throw in test / non-browser environments
+    }
   }, [isCodeView]);
 
   const handleEditorInteraction = useCallback(() => {
@@ -522,7 +526,7 @@ export const AdvanceTextEditor = ({
   // Load autosaved content on mount
   useEffect(() => {
     if (autoSaveKey) {
-      const saved = localStorage.getItem(autoSaveKey);
+      const saved = safeGetItem(autoSaveKey);
       if (saved) {
         setHtmlContent(saved);
         if (editorRef.current) {
@@ -540,7 +544,7 @@ export const AdvanceTextEditor = ({
     
     setIsSaved(false);
     const handler = setTimeout(() => {
-      localStorage.setItem(autoSaveKey, htmlContent);
+      safeSetItem(autoSaveKey, htmlContent);
       setIsSaved(true);
     }, 1000);
 
@@ -549,6 +553,7 @@ export const AdvanceTextEditor = ({
 
   // Theme resolution logic
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
       setSystemMode(e.matches ? 'dark' : 'light');
@@ -629,7 +634,7 @@ export const AdvanceTextEditor = ({
       }
     }
   };
-  const execCommand = (command: string, value: string | any = undefined) => {
+  const execCommand = (command: string, value?: string | boolean | number) => {
     if (isCodeView) return;
     if (selectionRef.current) {
       restoreSelection();
@@ -640,7 +645,12 @@ export const AdvanceTextEditor = ({
     }
     try {
       document.execCommand('styleWithCSS', false, 'true');
-      const finalValue = command === 'fontName' ? (typeof value === 'string' && value.includes(' ') ? `'${value}'` : value) : value;
+      const finalValue =
+        command === 'fontName' && typeof value === 'string'
+          ? (value.includes(' ') ? `'${value}'` : value)
+          : value !== undefined
+            ? String(value)
+            : undefined;
       document.execCommand(command, false, finalValue);
     } catch {
       console.warn('Command failed:', command);
@@ -1505,6 +1515,7 @@ export const AdvanceTextEditor = ({
   }, [isCodeView]);
 
   return (
+    <EditorErrorBoundary>
     <div
       className={cn(
         "custom-editor-container",
@@ -1964,34 +1975,36 @@ export const AdvanceTextEditor = ({
 
               <ToolbarButton title="Horizontal Rule" onClick={() => execCommand('insertHorizontalRule')} icon={<Minus size={18} />} disabled={isCodeView} />
 
-              <div className="format-dropdown-container">
-                <ToolbarButton
-                  title="Emoji"
-                  active={showEmojiPicker}
-                  onClick={() => { saveSelection(); const next = !showEmojiPicker; closeAllPopups('emoji'); setShowEmojiPicker(next); }}
-                  icon={<Smile size={18} />}
-                  disabled={isCodeView}
-                />
-                {showEmojiPicker && (
-                  <div className="dropdown-menu emoji-picker-wrapper p-0 overflow-hidden">
-                    <Suspense fallback={
-                      <div className="flex items-center justify-center w-[350px] h-[450px] bg-editor-bg">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-editor-accent"></div>
-                      </div>
-                    }>
-                      <EmojiPicker
-                        theme={(resolvedMode === 'dark' ? EmojiTheme.DARK : EmojiTheme.LIGHT) as any}
-                        onEmojiClick={(emojiData) => insertEmoji(emojiData.emoji)}
-                        width="350px"
-                        height="450px"
-                        lazyLoadEmojis={true}
-                        skinTonesDisabled={false}
-                        searchPlaceholder="Search emojis..."
-                      />
-                    </Suspense>
-                  </div>
-                )}
-              </div>
+              {emojiPickerAvailable && (
+                <div className="format-dropdown-container">
+                  <ToolbarButton
+                    title="Emoji"
+                    active={showEmojiPicker}
+                    onClick={() => { saveSelection(); const next = !showEmojiPicker; closeAllPopups('emoji'); setShowEmojiPicker(next); }}
+                    icon={<Smile size={18} />}
+                    disabled={isCodeView}
+                  />
+                  {showEmojiPicker && (
+                    <div className="dropdown-menu emoji-picker-wrapper p-0 overflow-hidden">
+                      <Suspense fallback={
+                        <div className="flex items-center justify-center w-[350px] h-[450px] bg-editor-bg">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-editor-accent"></div>
+                        </div>
+                      }>
+                        <EmojiPicker
+                          theme={(resolvedMode === 'dark' ? EmojiTheme.DARK : EmojiTheme.LIGHT) as EmojiPickerTheme}
+                          onEmojiClick={(emojiData) => insertEmoji(emojiData.emoji)}
+                          width="350px"
+                          height="450px"
+                          lazyLoadEmojis={true}
+                          skinTonesDisabled={false}
+                          searchPlaceholder="Search emojis..."
+                        />
+                      </Suspense>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="toolbar-divider" />
@@ -2438,6 +2451,7 @@ export const AdvanceTextEditor = ({
         </div>
       )}
     </div>
+    </EditorErrorBoundary>
   );
 };
 

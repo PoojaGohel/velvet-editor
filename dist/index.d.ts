@@ -1,7 +1,21 @@
 import * as react_jsx_runtime from 'react/jsx-runtime';
 
+/** Injected at build time via tsup `define` — avoids bundling package.json */
 declare const EDITOR_VERSION: string;
 
+interface EditorStats {
+    words: number;
+    characters: number;
+}
+interface FontOption {
+    name: string;
+    value: string;
+}
+interface FontSizeOption {
+    name: string;
+    value: string;
+}
+type PickerType = 'color' | 'bg' | 'link' | 'image' | 'table' | null;
 type EditorMode = 'light' | 'dark' | 'system';
 interface AdvanceTextEditorProps {
     accentColor?: string;
@@ -20,4 +34,4 @@ interface AdvanceTextEditorProps {
 
 declare const AdvanceTextEditor: ({ accentColor, mode, placeholder, onChange, className, variant, minHeight, maxHeight, padding, fontSize, initialValue, autoSaveKey }: AdvanceTextEditorProps) => react_jsx_runtime.JSX.Element;
 
-export { AdvanceTextEditor, EDITOR_VERSION };
+export { AdvanceTextEditor, type AdvanceTextEditorProps, EDITOR_VERSION, type EditorMode, type EditorStats, type FontOption, type FontSizeOption, type PickerType };

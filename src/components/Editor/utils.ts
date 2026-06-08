@@ -1,12 +1,10 @@
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import packageJson from '../../../package.json';
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+// Lightweight class name joiner — no external deps needed
+export function cn(...inputs: (string | undefined | null | false | 0)[]) {
+  return inputs.filter(Boolean).join(' ');
 }
 
-export const EDITOR_VERSION = packageJson.version;
+/** Injected at build time via tsup `define` — avoids bundling package.json */
+export const EDITOR_VERSION = __EDITOR_VERSION__;
 
 export const COLORS = [
   '#000000', '#ffffff', '#ef4444', '#f97316', '#f59e0b', '#10b981',

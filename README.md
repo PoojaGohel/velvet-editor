@@ -1,48 +1,41 @@
-# Velvet Writer - The Best Rich Text Editor for React
+# Velvet Writer — React Rich Text Editor
 
+[![CI](https://img.shields.io/github/actions/workflow/status/PoojaGohel/velvet-editor/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/PoojaGohel/velvet-editor/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/velvet-writer.svg?style=flat-square&color=a855f7)](https://www.npmjs.com/package/velvet-writer)
 [![npm downloads](https://img.shields.io/npm/dm/velvet-writer.svg?style=flat-square&color=10b981)](https://www.npmjs.com/package/velvet-writer)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/velvet-writer?style=flat-square&color=3b82f6)](https://bundlephobia.com/package/velvet-writer)
+[![GitHub stars](https://img.shields.io/github/stars/PoojaGohel/velvet-editor?style=flat-square&color=8b5cf6)](https://github.com/PoojaGohel/velvet-editor/stargazers)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/velvet-writer?style=flat-square&color=3b82f6&label=~55KB)](https://bundlephobia.com/package/velvet-writer)
 [![license](https://img.shields.io/npm/l/velvet-writer.svg?style=flat-square&color=f59e0b)](https://github.com/PoojaGohel/velvet-editor/blob/main/LICENSE)
 [![sponsor](https://img.shields.io/badge/sponsor-pooja--gohel-ea4aaa?style=flat-square&logo=github-sponsors)](https://github.com/sponsors/PoojaGohel)
-[![ko-fi](https://img.shields.io/badge/ko--fi-donate-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/PoojaGohel)
 
-Looking for the **best rich text editor for React**? Velvet Writer is a premium, high-performance, and 100% custom-built **text editor for React**. Designed to be the **most popular rich text editor for React** applications needing a beautiful, zero-dependency WYSIWYG solution. No Slate, Quill, or Draft.js bloat — just raw DOM performance with a stunning glassmorphism UI. It is the perfect **Tiptap alternative**, **Slate alternative**, and **Quill alternative** for modern projects. If you want to build a **Notion clone in React**, Velvet Writer provides the exact **Notion-like editor** experience out of the box.
+**Zero-dependency React rich text editor** with glassmorphism UI, slash commands, inline markdown, tables, and dark mode — drop in and ship in under 2 minutes. No Slate, Quill, or Draft.js required.
 
-> 🔗 **[Live Demo](https://poojagohel.github.io/velvet-editor/)** | 💻 **[Try on CodeSandbox](https://codesandbox.io/s/x5d927)**
+```bash
+npm install velvet-writer
+```
+
+### Try it now
+
+| | Link |
+| :--- | :--- |
+| 🎮 **Live demo** | [poojagohel.github.io/velvet-editor](https://poojagohel.github.io/velvet-editor/) |
+| ⚡ **StackBlitz** | [Open starter project](https://stackblitz.com/github/PoojaGohel/velvet-editor/tree/main/examples/vite-starter) |
+| 📦 **npm** | [velvet-writer](https://www.npmjs.com/package/velvet-writer) |
+| 📊 **Compare** | [vs Tiptap, Slate, Quill](./docs/COMPARISON.md) |
+
+> ⭐ **If Velvet Writer saves you time, [star the repo](https://github.com/PoojaGohel/velvet-editor)** — it helps other developers discover the package.
+
+---
 
 ## ⚖️ Why Choose Velvet Writer?
 
-When developers look for the best React rich text editor, Velvet Writer stands out as the ultimate modern choice:
-- **No Boilerplate:** No need to write hundreds of lines of custom plugin code just to get basic formatting working; Velvet Writer is plug-and-play out of the box.
-- **Zero Dependencies:** Velvet Writer uses 100% native DOM APIs for maximum performance and a tiny bundle size, avoiding heavy external libraries and styling bloat.
-- **Modern UI First:** Built specifically for modern web aesthetics with built-in glassmorphism, smooth animations, and automatic dark mode.
-- **Notion Style Editing:** Bring block-style, command-palette driven editing to your app instantly.
+- **Zero Runtime Dependencies** — No `clsx`, no `tailwind-merge`, no heavy extras. Just React and native DOM APIs.
+- **No Boilerplate** — Plug-and-play. Drop it in and get a full-featured editor with one component.
+- **Modern UI First** — Built-in glassmorphism, smooth animations, and automatic dark mode.
+- **Notion-Style Editing** — Block-style slash commands, inline markdown parsing, and contextual table tools.
+- **Production stability** — Automated tests, CI on every push, error boundary, safe localStorage, and graceful optional emoji support.
 
-## ✨ Key Features & Capabilities
-
-Velvet Writer ships with a massive suite of features out of the box, requiring absolutely zero configuration or plugin installations.
-
-### 🏗️ Core Architecture
-*   🚀 **100% Dependency-Free Core** — Built entirely on native DOM APIs. No Slate, Quill, or DraftJS bloat. Incredible performance, sub-millisecond input latency, and zero security audit warnings.
-*   🛡️ **TypeScript Native** — Written from the ground up in strict TypeScript. Provides flawless autocompletion and is heavily optimized for React 18+ and modern frameworks.
-*   💻 **Raw HTML Engine** — Switch instantly between visual editing and a built-in code editor featuring auto-prettify, instant copy-to-clipboard, and live bidirectional DOM updates.
-
-### ✍️ Next-Gen Editing Experience
-*   ⚡ **Notion-Style Slash Commands** — Type `/` anywhere to open a lightning-fast floating command palette. Swiftly insert headings, quotes, tables, and media entirely from the keyboard.
-*   📊 **Interactive Table Suite** — Insert structured data seamlessly using an elegant 8×8 hover grid picker. Features interactive cell highlighting and a floating toolbar for dynamic column/row manipulation.
-*   🤖 **Markdown Auto-Parsing** — Instantly convert markdown syntax into rich elements on the fly. Type `# ` for H1, `> ` for blockquotes, or `- ` for bullet lists.
-*   🔗 **Dynamic Media Engine** — Clean, inline popovers for inserting hyperlinks and embedding responsive images with real-time scaling and alignment support.
-
-### 🎨 Premium UI & Design System
-*   🎨 **Glassmorphism Aesthetics** — A visually stunning design featuring smooth transitions, frosted glass dropdowns, floating menus, and ultra-premium micro-interactions.
-*   🌓 **Smart Auto-Dark Mode** — Complete native support for Light, Dark, and System-adaptive modes that instantly react to the user's OS preference without flashing.
-*   🖌️ **One-Prop Branding** — Instantly brand the editor to your SaaS application. Pass a single hex color (`accentColor="#a855f7"`) and the entire UI intelligently adapts its shadows, borders, and highlights.
-*   🔤 **Elite Typography System** — Pre-integrated with premium Google Fonts (Inter, Roboto, Poppins, Outfit, etc.), 7 adaptive font sizes, and mathematically perfect heading hierarchies (H1 to H4).
-
-### ⚡ Power User Workflows
-*   ⌨️ **Pro Keyboard Shortcuts** — Deep workflow support with `Ctrl+B`, `Ctrl+I`, `Ctrl+U`, `Ctrl+S`, `Ctrl+Z` (Undo), `Ctrl+Y` (Redo), and intuitive `Tab`/`Shift+Tab` block indentation.
-*   📈 **Real-Time Status Metrics** — High-fidelity bottom status bar providing instant word counts, character limits, active formatting states, and clean design metrics.
+---
 
 ## 📦 Installation
 
@@ -52,6 +45,18 @@ npm install velvet-writer
 yarn add velvet-writer
 ```
 
+### Optional: Enable the Emoji Picker
+
+The emoji toolbar button requires `emoji-picker-react`. Install it only if you need emoji support:
+
+```bash
+npm install emoji-picker-react
+```
+
+If `emoji-picker-react` is not installed, the emoji button simply won't render the picker. No errors, no crashes.
+
+---
+
 ## 🚀 Quick Start
 
 ```tsx
@@ -59,32 +64,187 @@ import { AdvanceTextEditor } from 'velvet-writer';
 import 'velvet-writer/dist/index.css';
 
 function App() {
-  const handleChange = (html: string) => {
-    console.log(html);
-  };
-
   return (
-    <AdvanceTextEditor 
-      accentColor="#a855f7" 
-      mode="system" 
-      onChange={handleChange} 
+    <AdvanceTextEditor
+      accentColor="#a855f7"
+      mode="system"
+      onChange={(html) => console.log(html)}
     />
   );
 }
 ```
 
-## ⚙️ Props
+### Vite / Create React App
+
+Works with any React 18+ bundler. See the [minimal Vite starter](../examples/vite-starter/) or [open it in StackBlitz](https://stackblitz.com/github/PoojaGohel/velvet-editor/tree/main/examples/vite-starter).
+
+### Next.js (App Router)
+
+Velvet Writer uses `contenteditable` and runs in the browser. Import it **client-side only**:
+
+```tsx
+'use client';
+
+import dynamic from 'next/dynamic';
+
+const AdvanceTextEditor = dynamic(
+  () => import('velvet-writer').then((m) => m.AdvanceTextEditor),
+  { ssr: false, loading: () => <p>Loading editor…</p> }
+);
+
+// In layout or page — also import CSS once:
+// import 'velvet-writer/dist/index.css';
+
+export default function EditorPage() {
+  return (
+    <AdvanceTextEditor mode="system" accentColor="#a855f7" />
+  );
+}
+```
+
+Add `import 'velvet-writer/dist/index.css'` in your root layout or this page.
+
+---
+
+## 🔌 Integration Guide
+
+### Basic CMS / Blog Editor
+
+```tsx
+import { useState } from 'react';
+import { AdvanceTextEditor } from 'velvet-writer';
+import 'velvet-writer/dist/index.css';
+
+function BlogEditor() {
+  const [content, setContent] = useState('');
+
+  const handleSave = () => {
+    // `content` is clean semantic HTML — store it in your database
+    fetch('/api/posts', {
+      method: 'POST',
+      body: JSON.stringify({ body: content }),
+    });
+  };
+
+  return (
+    <div>
+      <AdvanceTextEditor
+        accentColor="#6366f1"
+        mode="light"
+        variant="flat"
+        placeholder="Write your post..."
+        onChange={setContent}
+        autoSaveKey="my-blog-draft"   // auto-saves to localStorage
+      />
+      <button onClick={handleSave}>Publish</button>
+    </div>
+  );
+}
+```
+
+### Controlled Editor with Initial HTML Value
+
+```tsx
+import { AdvanceTextEditor } from 'velvet-writer';
+import 'velvet-writer/dist/index.css';
+
+function EditPost({ post }: { post: { body: string } }) {
+  return (
+    <AdvanceTextEditor
+      initialValue={post.body}          // pre-fill with existing HTML
+      onChange={(html) => console.log(html)}
+      accentColor="#10b981"
+      mode="dark"
+      variant="premium"
+      minHeight="400px"
+      maxHeight="800px"
+      padding="24px 32px"
+      fontSize="1.05rem"
+    />
+  );
+}
+```
+
+### With React Hook Form
+
+```tsx
+import { Controller, useForm } from 'react-hook-form';
+import { AdvanceTextEditor } from 'velvet-writer';
+import 'velvet-writer/dist/index.css';
+
+function PostForm() {
+  const { control, handleSubmit } = useForm();
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <Controller
+        name="body"
+        control={control}
+        render={({ field }) => (
+          <AdvanceTextEditor
+            initialValue={field.value}
+            onChange={field.onChange}
+            accentColor="#a855f7"
+          />
+        )}
+      />
+      <button type="submit">Save</button>
+    </form>
+  );
+}
+```
+
+---
+
+## ⚙️ Props (All Options)
 
 | Prop | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `accentColor` | `string` | `#a855f7` | Primary theme color for highlights, selections, and UI accents |
-| `mode` | `'light' \| 'dark' \| 'system'` | `'system'` | Theme mode with auto-detection for system preference |
-| `onChange` | `(html: string) => void` | `undefined` | Callback triggered on every content change, returns raw HTML |
-| `placeholder` | `string` | `'Start typing...'` | Placeholder text displayed when the editor is empty |
+| `accentColor` | `string` | `#a855f7` | Primary theme color for highlights, selections, borders, and UI accents. Pass any valid hex color. |
+| `mode` | `'light' \| 'dark' \| 'system'` | `'dark'` | Theme mode. `'system'` auto-detects the user's OS preference. |
+| `variant` | `'premium' \| 'flat'` | `'premium'` | `'premium'` shows a glassmorphism frosted-glass toolbar. `'flat'` is a clean minimal style. |
+| `placeholder` | `string` | `'Start typing your masterpiece...'` | Placeholder text shown when the editor is empty. |
+| `initialValue` | `string` | `<p><br></p>` | Initial HTML content to pre-fill the editor. Updates when this prop changes. |
+| `onChange` | `(html: string) => void` | — | Callback called on every edit, returning clean semantic HTML. |
+| `minHeight` | `string \| number` | — | Minimum height of the editable area (e.g., `'400px'` or `400`). |
+| `maxHeight` | `string \| number` | — | Maximum height before the editor scrolls (e.g., `'800px'` or `800`). |
+| `padding` | `string` | — | Internal padding for the editable content area (e.g., `'24px 32px'`). |
+| `fontSize` | `string` | — | Base font size for editor content (e.g., `'1rem'` or `'16px'`). |
+| `autoSaveKey` | `string` | — | When set, automatically persists content to `localStorage` under this key and restores it on mount. |
+| `className` | `string` | — | Additional CSS class applied to the outermost editor wrapper. |
+
+---
+
+## ✨ Features
+
+### 🏗️ Core Architecture
+- 🚀 **Zero Dependencies** — Built entirely on native DOM APIs. No Slate, Quill, or DraftJS. Tiny bundle, sub-millisecond input latency.
+- 🛡️ **TypeScript Native** — Full type definitions included. Flawless autocompletion in VS Code, WebStorm, etc.
+- 💻 **Raw HTML Source View** — Toggle to a live code editor with auto-prettify and instant clipboard copy.
+
+### ✍️ Editing Experience
+- ⚡ **Slash Commands** — Type `/` to open a floating command palette. Insert headings, quotes, tables, and images by keyboard.
+- 📊 **Interactive Table Editor** — Elegant 8×8 hover grid picker, floating toolbar for add/delete row/column actions.
+- 🤖 **Inline Markdown** — `# ` → H1, `**bold**` → **bold**, `~~text~~` → strikethrough, all convert on Space.
+- 🔗 **Media Engine** — Inline popovers for links and images with real-time width/height controls.
+
+### 🎨 Design System
+- 🎨 **Glassmorphism UI** — Frosted glass dropdowns, floating menus, and premium micro-interactions.
+- 🌓 **Smart Dark Mode** — Light, Dark, and System-adaptive modes with no flash.
+- 🖌️ **One-Prop Branding** — Pass `accentColor="#your-hex"` and the entire UI adapts its shadows, borders, and highlights.
+- 🔤 **Typography Suite** — Pre-integrated with 16 Google Fonts, 11 font sizes, and H1–H4 heading hierarchy.
+
+### ⚡ Power Features
+- ⌨️ **Keyboard Shortcuts** — `Ctrl+B/I/U/S/Z/Y`, Tab indentation, and more.
+- 📈 **Real-Time Status Bar** — Live word count, character count, and active format indicators.
+- 😊 **Emoji Picker** — Searchable emoji picker with dark/light theme sync (requires optional `emoji-picker-react`).
+- 💾 **Auto-Save** — Pass `autoSaveKey` to get automatic localStorage persistence with debouncing.
+- 🎯 **Zen / Focus Mode** — Toggle distraction-free editing.
+- 📤 **Export** — Download content as Markdown or trigger a browser print-to-PDF.
+
+---
 
 ## ⌨️ Keyboard Shortcuts
-
-### Standard Formatting
 
 | Shortcut | Action |
 | :--- | :--- |
@@ -95,19 +255,14 @@ function App() {
 | `Ctrl + Z` | Undo |
 | `Ctrl + Y` | Redo |
 | `Ctrl + K` | Insert Link |
-
-### Editor Navigation
-
-| Shortcut | Action |
-| :--- | :--- |
-| `/` | Open Notion-Style Slash Command Menu |
-| `Tab` | Indent block (List or Text) |
-| `Shift + Tab` | Outdent block (List or Text) |
-| `Alt + 0` | Open Editor Help Center Modal |
-| `Alt + F10` | Focus the formatting toolbar |
+| `/` | Open Slash Command Menu |
+| `Tab` | Indent block |
+| `Shift + Tab` | Outdent block |
+| `Alt + 0` | Open Help Center Modal |
 
 ### Markdown Auto-Parsing
-Type these at the start of a new line followed by a **Space** to auto-format:
+
+Type at the **start of a line** followed by a **Space**:
 
 | Syntax | Converts To |
 | :--- | :--- |
@@ -118,20 +273,54 @@ Type these at the start of a new line followed by a **Space** to auto-format:
 | `-` | Bulleted List |
 | `1.` | Numbered List |
 
-## 🎨 Theming
+Inline (anywhere in text):
 
-Velvet Writer supports three theme modes out of the box:
+| Syntax | Converts To |
+| :--- | :--- |
+| `**text**` + Space | **Bold** |
+| `*text*` + Space | *Italic* |
+| `~~text~~` + Space | ~~Strikethrough~~ |
+| `` `code` `` + Space | `inline code` |
+
+---
+
+## 🎨 Theming Examples
 
 ```tsx
-// Auto-detect user's OS preference
+// Auto-detect OS preference (recommended)
 <AdvanceTextEditor mode="system" />
 
-// Force dark mode
-<AdvanceTextEditor mode="dark" />
+// Force dark mode with custom accent
+<AdvanceTextEditor mode="dark" accentColor="#f59e0b" />
 
-// Force light mode with custom accent
-<AdvanceTextEditor mode="light" accentColor="#10b981" />
+// Light flat variant (great for admin dashboards)
+<AdvanceTextEditor mode="light" variant="flat" accentColor="#10b981" />
+
+// Compact embedded editor
+<AdvanceTextEditor
+  minHeight="200px"
+  maxHeight="400px"
+  padding="12px 16px"
+  fontSize="0.875rem"
+/>
 ```
+
+---
+
+## 📊 How it compares
+
+See the full [comparison guide](./docs/COMPARISON.md) — Velvet Writer focuses on **fast setup**, **~55 KB minified bundle**, and a **premium UI** without extension hunting.
+
+---
+
+## 🤝 Support the project
+
+- ⭐ [Star on GitHub](https://github.com/PoojaGohel/velvet-editor)
+- 🐛 [Report a bug](https://github.com/PoojaGohel/velvet-editor/issues/new?template=bug_report.md)
+- 💡 [Request a feature](https://github.com/PoojaGohel/velvet-editor/issues/new?template=feature_request.md)
+- ☕ [Sponsor on GitHub](https://github.com/sponsors/PoojaGohel)
+
+---
 
 ## 📄 License
 

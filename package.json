@@ -1,67 +1,51 @@
 {
   "name": "velvet-writer",
-  "version": "1.2.16",
-  "description": "The best rich text editor for React. A premium, high-performance WYSIWYG text editor for React with dynamic themes, glassmorphism UI, keyboard shortcuts, and full dark/light mode support.",
+  "version": "1.3.3",
+  "description": "Zero-dependency React rich text editor with glassmorphism UI, slash commands, markdown shortcuts, tables, and dark mode. ~55KB minified. Tiptap & Quill alternative.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./dist/index.css": "./dist/index.css"
+    "./dist/index.css": "./dist/index.css",
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": [
     "react",
-    "editor",
     "rich-text-editor",
-    "text-editor",
     "wysiwyg",
-    "wysiwyg-editor",
     "react-editor",
-    "react-rich-text",
     "contenteditable",
-    "rich-text",
-    "html-editor",
-    "markdown",
-    "dark-mode",
-    "light-mode",
-    "theming",
-    "glassmorphism",
-    "table-editor",
-    "code-view",
-    "formatting",
-    "bold",
-    "italic",
-    "underline",
-    "text-formatting",
-    "keyboard-shortcuts",
-    "react-component",
+    "text-editor",
     "typescript",
-    "velvet",
-    "velvet-writer",
-    "custom-editor",
-    "lightweight-editor",
-    "no-dependencies",
-    "document-editor",
+    "dark-mode",
+    "notion-editor",
+    "slash-commands",
+    "tiptap-alternative",
+    "quill-alternative",
+    "slate-alternative",
     "blog-editor",
     "cms-editor",
-    "content-editor",
-    "tiptap-alternative",
-    "slate-alternative",
-    "quill-alternative",
-    "notion-clone",
-    "notion-like-editor",
-    "notion-style-editor",
-    "slash-commands",
-    "block-style-editor",
-    "floating-toolbar"
+    "glassmorphism",
+    "velvet-writer",
+    "no-dependencies",
+    "markdown-editor",
+    "table-editor"
   ],
   "bugs": {
     "url": "https://github.com/PoojaGohel/velvet-editor/issues"
@@ -87,29 +71,41 @@
     }
   ],
   "scripts": {
-    "build": "tsup src/components/Editor/index.ts --format cjs,esm --dts --minify --clean",
-    "lint": "eslint ."
+    "build": "tsup",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run lint && npm run test && npm run build"
   },
   "peerDependencies": {
     "react": ">=18",
-    "react-dom": ">=18"
+    "react-dom": ">=18",
+    "emoji-picker-react": ">=4"
   },
-  "dependencies": {
-    "clsx": "^2.1.1",
-    "emoji-picker-react": "^4.19.1",
-    "lucide-react": "^0.378.0",
-    "tailwind-merge": "^2.3.0"
+  "peerDependenciesMeta": {
+    "emoji-picker-react": {
+      "optional": true
+    }
   },
+  "dependencies": {},
   "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.0",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.6",
+    "emoji-picker-react": "^4.19.1",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "jsdom": "^26.0.0",
+    "lucide-react": "^0.378.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "tsup": "^8.0.2",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "typescript-eslint": "^8.19.0",
+    "vitest": "^3.0.5"
   },
   "publishConfig": {
     "access": "public"
